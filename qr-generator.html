@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#0e0c0a;--panel:#181512;--ink:#f4efe6;--muted:#9a9183;
+    --accent:#e8623d;--line:#2b2620;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Georgia","Times New Roman",serif;
+    background:radial-gradient(900px 600px at 80% -10%, rgba(232,98,61,.12), transparent 60%),var(--bg);
+    color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;
+  }
+  .card{width:100%;max-width:880px;background:var(--panel);border:1px solid var(--line);
+    border-radius:18px;overflow:hidden;box-shadow:0 30px 80px -30px rgba(0,0,0,.8);}
+  .head{padding:34px 38px 26px;border-bottom:1px solid var(--line);}
+  .kicker{font-family:"Courier New",monospace;letter-spacing:.35em;text-transform:uppercase;
+    font-size:11px;color:var(--accent);margin-bottom:14px;}
+  h1{font-size:34px;font-weight:400;letter-spacing:-.01em;line-height:1.05}
+  h1 em{font-style:italic;color:var(--accent)}
+  p.sub{color:var(--muted);font-size:15px;margin-top:10px}
+  .body{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  @media(max-width:680px){.body{grid-template-columns:1fr}}
+  .controls{padding:30px 38px;display:flex;flex-direction:column;gap:20px}
+  label{font-family:"Courier New",monospace;font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);display:block;margin-bottom:9px;}
+  input[type=url],input[type=text],select{width:100%;background:#100e0b;border:1px solid var(--line);
+    color:var(--ink);padding:13px 14px;border-radius:10px;font-family:"Courier New",monospace;font-size:14px;transition:border-color .2s;}
+  input:focus,select:focus{outline:none;border-color:var(--accent)}
+  .row{display:flex;gap:14px}.row>div{flex:1}
+  input[type=color]{-webkit-appearance:none;width:100%;height:46px;border:1px solid var(--line);
+    border-radius:10px;background:#100e0b;cursor:pointer;padding:5px;}
+  input[type=color]::-webkit-color-swatch{border:none;border-radius:6px}
+  input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+  button{background:var(--accent);color:#1a0e08;border:none;padding:14px;border-radius:10px;cursor:pointer;
+    font-family:"Courier New",monospace;font-size:13px;font-weight:bold;letter-spacing:.12em;
+    text-transform:uppercase;transition:transform .12s,opacity .2s;}
+  button:hover{transform:translateY(-1px)}
+  button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .preview{background:#100e0b;border-left:1px solid var(--line);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:30px;gap:18px;}
+  @media(max-width:680px){.preview{border-left:none;border-top:1px solid var(--line)}}
+  .stage{width:100%;max-width:300px;display:flex;align-items:center;justify-content:center;}
+  canvas{width:100%;height:auto;border-radius:12px;box-shadow:0 16px 40px -16px rgba(0,0,0,.6);}
+  .hint{color:var(--muted);font-size:13px;text-align:center;font-style:italic}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <div class="kicker">Scan · Redirect · Done</div>
+      <h1>QR Code <em>Studio</em></h1>
+      <p class="sub">Your link becomes a scannable code. Add a caption that prints beneath it &mdash; it sits outside the QR, so scanning still goes straight to your link.</p>
+    </div>
+    <div class="body">
+      <div class="controls">
+        <div>
+          <label for="url">Your link</label>
+          <input type="url" id="url" placeholder="https://example.com/your-page" value="https://">
+        </div>
+        <div>
+          <label for="caption">Caption text (printed under the code)</label>
+          <input type="text" id="caption" placeholder="e.g. Scan to visit our shop" maxlength="60">
+        </div>
+        <div class="row">
+          <div>
+            <label for="style">Module style</label>
+            <select id="style">
+              <option value="rounded">Rounded</option>
+              <option value="dots">Dots</option>
+              <option value="square">Classic</option>
+            </select>
+          </div>
+          <div>
+            <label for="theme">Theme</label>
+            <select id="theme">
+              <option value="ink">Ink on cream</option>
+              <option value="mono">Black on white</option>
+              <option value="ember">Ember</option>
+              <option value="forest">Forest</option>
+              <option value="ocean">Ocean</option>
+              <option value="custom">Custom…</option>
+            </select>
+          </div>
+        </div>
+        <div class="row" id="customColors" style="display:none">
+          <div><label for="fg">Code color</label><input type="color" id="fg" value="#0e0c0a"></div>
+          <div><label for="bg">Background</label><input type="color" id="bg" value="#ffffff"></div>
+        </div>
+        <button id="download" disabled>Download PNG</button>
+        <p class="hint" style="text-align:left">Test the code with your phone camera before printing or sharing.</p>
+      </div>
+      <div class="preview">
+        <div class="stage"><canvas id="cv" width="100" height="100"></canvas></div>
+        <div class="hint" id="status">Enter a valid link to generate</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+var cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+var urlI=document.getElementById('url'),capI=document.getElementById('caption');
+var styleI=document.getElementById('style'),themeI=document.getElementById('theme');
+var fgI=document.getElementById('fg'),bgI=document.getElementById('bg');
+var custom=document.getElementById('customColors');
+var dlBtn=document.getElementById('download'),status=document.getElementById('status');
+
+var THEMES={
+  ink:{fg:'#1a1714',bg:'#f6efe1'},
+  mono:{fg:'#000000',bg:'#ffffff'},
+  ember:{fg:'#7a1f10',bg:'#fff4ee'},
+  forest:{fg:'#15402c',bg:'#f0f6ef'},
+  ocean:{fg:'#0d3a5c',bg:'#eef6fb'}
+};
+
+function colors(){
+  if(themeI.value==='custom') return {fg:fgI.value,bg:bgI.value};
+  return THEMES[themeI.value];
+}
+function isValid(u){if(!u||u==='https://'||u==='http://')return false;try{new URL(u);return true}catch(e){return false}}
+
+function rr(c,x,y,w,h,r){r=Math.min(r,w/2,h/2);c.beginPath();
+  c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+
+function inFinder(r,c,n){
+  return (r<7&&c<7)||(r<7&&c>=n-7)||(r>=n-7&&c<7);
+}
+
+function drawFinder(c,x,y,m,fg,bg,style){
+  var R=style==='square'?0:1;
+  c.fillStyle=fg; rr(c,x,y,7*m,7*m,7*m*0.22*R); c.fill();
+  c.fillStyle=bg; rr(c,x+m,y+m,5*m,5*m,5*m*0.22*R); c.fill();
+  c.fillStyle=fg; rr(c,x+2*m,y+2*m,3*m,3*m,3*m*0.28*R); c.fill();
+}
+
+function wrap(c,text,maxW){
+  var words=text.split(/\s+/),lines=[],line='';
+  for(var i=0;i<words.length;i++){
+    var t=line?line+' '+words[i]:words[i];
+    if(c.measureText(t).width>maxW&&line){lines.push(line);line=words[i];}
+    else line=t;
+  }
+  if(line)lines.push(line);return lines;
+}
+
+function render(){
+  var u=urlI.value.trim();
+  if(!isValid(u)){dlBtn.disabled=true;status.textContent='Enter a valid link to generate';
+    ctx.clearRect(0,0,cv.width,cv.height);cv.width=100;cv.height=100;return;}
+  var col=colors(),fg=col.fg,bg=col.bg,style=styleI.value;
+  var qr;try{qr=QRCode.create(u,{errorCorrectionLevel:'H'});}catch(e){status.textContent='Link too long for one code';return;}
+  var n=qr.modules.size, data=qr.modules.data;
+  var m=14;                       // px per module (high-res)
+  var quiet=4;                    // quiet zone in modules
+  var pad=Math.round(m*4);        // outer canvas padding
+  var qrPx=(n+quiet*2)*m;
+  var cap=capI.value.trim();
+  var capFont=Math.round(m*2.6);
+  var capLines=[];
+  if(cap){ctx.font=capFont+'px Georgia, serif'; }
+  var W=qrPx+pad*2;
+  // measure caption lines against width
+  var measureCtx=cv.getContext('2d');measureCtx.font=capFont+'px Georgia, serif';
+  if(cap)capLines=wrap(measureCtx,cap,qrPx);
+  var capBlock=cap?(capLines.length*capFont*1.25+pad*0.6):0;
+  var H=qrPx+pad*2+capBlock;
+  cv.width=W;cv.height=H;
+
+  // card background
+  ctx.fillStyle=bg;rr(ctx,0,0,W,H,m*2.4);ctx.fill();
+
+  // QR origin (inside quiet zone)
+  var ox=pad+quiet*m, oy=pad+quiet*m;
+  ctx.fillStyle=fg;
+  for(var r=0;r<n;r++){
+    for(var cidx=0;cidx<n;cidx++){
+      if(!data[r*n+cidx])continue;
+      if(inFinder(r,cidx,n))continue;
+      var x=ox+cidx*m, y=oy+r*m;
+      if(style==='dots'){
+        ctx.beginPath();ctx.arc(x+m/2,y+m/2,m*0.42,0,7);ctx.fill();
+      }else if(style==='rounded'){
+        rr(ctx,x+m*0.06,y+m*0.06,m*0.88,m*0.88,m*0.32);ctx.fill();
+      }else{
+        ctx.fillRect(x,y,m,m);
+      }
+    }
+  }
+  // finder patterns
+  drawFinder(ctx,ox,oy,m,fg,bg,style);
+  drawFinder(ctx,ox+(n-7)*m,oy,m,fg,bg,style);
+  drawFinder(ctx,ox,oy+(n-7)*m,m,fg,bg,style);
+
+  // caption
+  if(cap){
+    ctx.fillStyle=fg;ctx.font=capFont+'px Georgia, serif';ctx.textAlign='center';ctx.textBaseline='top';
+    var ty=pad+qrPx+pad*0.45;
+    for(var i=0;i<capLines.length;i++){ctx.fillText(capLines[i],W/2,ty+i*capFont*1.25);}
+  }
+  dlBtn.disabled=false;status.textContent='Ready — scan to test, then download';
+}
+
+function download(){
+  var a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download='qr-code.png';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
+themeI.addEventListener('change',function(){custom.style.display=themeI.value==='custom'?'flex':'none';render();});
+[urlI,capI,styleI,fgI,bgI].forEach(function(el){el.addEventListener('input',render);});
+dlBtn.addEventListener('click',download);
+render();
+</script>
+</body>
+</html>
