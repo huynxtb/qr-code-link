@@ -3,97 +3,96 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Code Studio</title>
+<title>QR Code</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
 <style>
-  :root{
-    --bg:#0e0c0a;--panel:#181512;--ink:#f4efe6;--muted:#9a9183;
-    --accent:#e8623d;--line:#2b2620;
-  }
+  :root{--bg:#fbfbf9;--panel:#ffffff;--ink:#1a1a1a;--muted:#8c8c88;--line:#ececea;--accent:#1a1a1a;}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:"Georgia","Times New Roman",serif;
-    background:radial-gradient(900px 600px at 80% -10%, rgba(232,98,61,.12), transparent 60%),var(--bg);
-    color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;
-  }
-  .card{width:100%;max-width:880px;background:var(--panel);border:1px solid var(--line);
-    border-radius:18px;overflow:hidden;box-shadow:0 30px 80px -30px rgba(0,0,0,.8);}
-  .head{padding:34px 38px 26px;border-bottom:1px solid var(--line);}
-  .kicker{font-family:"Courier New",monospace;letter-spacing:.35em;text-transform:uppercase;
-    font-size:11px;color:var(--accent);margin-bottom:14px;}
-  h1{font-size:34px;font-weight:400;letter-spacing:-.01em;line-height:1.05}
-  h1 em{font-style:italic;color:var(--accent)}
-  p.sub{color:var(--muted);font-size:15px;margin-top:10px}
+  body{font-family:"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;}
+  .card{width:100%;max-width:860px;background:var(--panel);border:1px solid var(--line);
+    border-radius:20px;overflow:hidden;box-shadow:0 20px 60px -30px rgba(0,0,0,.18);}
+  .head{padding:36px 40px 28px;border-bottom:1px solid var(--line);}
+  h1{font-size:26px;font-weight:600;letter-spacing:-.02em}
+  p.sub{color:var(--muted);font-size:14px;margin-top:8px;line-height:1.5}
   .body{display:grid;grid-template-columns:1fr 1fr;gap:0;}
   @media(max-width:680px){.body{grid-template-columns:1fr}}
-  .controls{padding:30px 38px;display:flex;flex-direction:column;gap:20px}
-  label{font-family:"Courier New",monospace;font-size:11px;letter-spacing:.18em;
-    text-transform:uppercase;color:var(--muted);display:block;margin-bottom:9px;}
-  input[type=url],input[type=text],select{width:100%;background:#100e0b;border:1px solid var(--line);
-    color:var(--ink);padding:13px 14px;border-radius:10px;font-family:"Courier New",monospace;font-size:14px;transition:border-color .2s;}
-  input:focus,select:focus{outline:none;border-color:var(--accent)}
-  .row{display:flex;gap:14px}.row>div{flex:1}
-  input[type=color]{-webkit-appearance:none;width:100%;height:46px;border:1px solid var(--line);
-    border-radius:10px;background:#100e0b;cursor:pointer;padding:5px;}
-  input[type=color]::-webkit-color-swatch{border:none;border-radius:6px}
-  input[type=color]::-webkit-color-swatch-wrapper{padding:0}
-  button{background:var(--accent);color:#1a0e08;border:none;padding:14px;border-radius:10px;cursor:pointer;
-    font-family:"Courier New",monospace;font-size:13px;font-weight:bold;letter-spacing:.12em;
-    text-transform:uppercase;transition:transform .12s,opacity .2s;}
-  button:hover{transform:translateY(-1px)}
-  button:disabled{opacity:.4;cursor:not-allowed;transform:none}
-  .preview{background:#100e0b;border-left:1px solid var(--line);display:flex;flex-direction:column;
-    align-items:center;justify-content:center;padding:30px;gap:18px;}
+  .controls{padding:32px 40px;display:flex;flex-direction:column;gap:22px}
+  label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+    display:block;margin-bottom:8px;font-weight:600;}
+  input[type=url],input[type=text],select{width:100%;background:#fff;border:1px solid var(--line);
+    color:var(--ink);padding:12px 14px;border-radius:11px;font-size:14px;font-family:inherit;transition:border-color .2s;}
+  input:focus,select:focus{outline:none;border-color:#1a1a1a}
+  .swatches{display:flex;gap:10px}
+  .sw{width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .12s}
+  .sw:hover{transform:scale(1.08)}
+  .sw.on{border-color:#1a1a1a;box-shadow:0 0 0 2px #fff inset}
+  button{background:#1a1a1a;color:#fff;border:none;padding:14px;border-radius:11px;cursor:pointer;
+    font-size:13px;font-weight:600;letter-spacing:.03em;transition:opacity .2s}
+  button:hover{opacity:.88}button:disabled{opacity:.35;cursor:not-allowed}
+  .preview{background:#f4f4f1;border-left:1px solid var(--line);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:36px;gap:18px;}
   @media(max-width:680px){.preview{border-left:none;border-top:1px solid var(--line)}}
-  .stage{width:100%;max-width:300px;display:flex;align-items:center;justify-content:center;}
-  canvas{width:100%;height:auto;border-radius:12px;box-shadow:0 16px 40px -16px rgba(0,0,0,.6);}
-  .hint{color:var(--muted);font-size:13px;text-align:center;font-style:italic}
+  .stage{width:100%;max-width:280px;display:flex;align-items:center;justify-content:center;}
+  canvas{width:100%;height:auto;border-radius:16px;box-shadow:0 12px 36px -16px rgba(0,0,0,.22);}
+  .hint{color:var(--muted);font-size:12.5px;text-align:center}
 </style>
 </head>
 <body>
   <div class="card">
     <div class="head">
-      <div class="kicker">Scan · Redirect · Done</div>
-      <h1>QR Code <em>Studio</em></h1>
-      <p class="sub">Your link becomes a scannable code. Add a caption that prints beneath it &mdash; it sits outside the QR, so scanning still goes straight to your link.</p>
+      <h1>QR code</h1>
+      <p class="sub">Clean and simple. Paste your link, add a short caption, download.</p>
     </div>
     <div class="body">
       <div class="controls">
-        <div>
-          <label for="url">Your link</label>
-          <input type="url" id="url" placeholder="https://example.com/your-page" value="https://">
-        </div>
-        <div>
-          <label for="caption">Caption text (printed under the code)</label>
-          <input type="text" id="caption" placeholder="e.g. Scan to visit our shop" maxlength="60">
-        </div>
-        <div class="row">
-          <div>
-            <label for="style">Module style</label>
-            <select id="style">
-              <option value="rounded">Rounded</option>
-              <option value="dots">Dots</option>
-              <option value="square">Classic</option>
-            </select>
-          </div>
-          <div>
-            <label for="theme">Theme</label>
-            <select id="theme">
-              <option value="ink">Ink on cream</option>
-              <option value="mono">Black on white</option>
-              <option value="ember">Ember</option>
-              <option value="forest">Forest</option>
-              <option value="ocean">Ocean</option>
-              <option value="custom">Custom…</option>
-            </select>
-          </div>
-        </div>
-        <div class="row" id="customColors" style="display:none">
-          <div><label for="fg">Code color</label><input type="color" id="fg" value="#0e0c0a"></div>
-          <div><label for="bg">Background</label><input type="color" id="bg" value="#ffffff"></div>
-        </div>
+        <div><label for="qrtype">QR type</label>
+          <select id="qrtype"><option value="link">Link / URL</option><option value="contact">Contact card</option><option value="wifi">Wi-Fi</option><option value="email">Email</option><option value="phone">Phone</option><option value="sms">SMS</option><option value="text">Plain text</option></select></div>
+
+        <div class="grp" data-t="link"><label for="url">Your link</label>
+          <input type="url" id="url" placeholder="https://example.com" value="https://"></div>
+
+        <div class="grp" data-t="text" style="display:none"><label for="text">Text</label>
+          <input type="text" id="text" placeholder="Anything you want encoded"></div>
+
+        <div class="grp" data-t="phone" style="display:none"><label for="phone">Phone number</label>
+          <input type="text" id="phone" placeholder="+1 555 123 4567"></div>
+
+        <div class="grp" data-t="sms" style="display:none"><label for="smsnum">Number &amp; message</label>
+          <input type="text" id="smsnum" placeholder="+1 555 123 4567">
+          <input type="text" id="smsmsg" placeholder="Message (optional)" style="margin-top:10px"></div>
+
+        <div class="grp" data-t="email" style="display:none"><label for="emailto">Email</label>
+          <input type="text" id="emailto" placeholder="you@example.com">
+          <input type="text" id="emailsub" placeholder="Subject (optional)" style="margin-top:10px">
+          <input type="text" id="emailbody" placeholder="Body (optional)" style="margin-top:10px"></div>
+
+        <div class="grp" data-t="wifi" style="display:none"><label for="wifissid">Wi-Fi details</label>
+          <input type="text" id="wifissid" placeholder="Network name (SSID)">
+          <input type="text" id="wifipass" placeholder="Password" style="margin-top:10px">
+          <select id="wifienc" style="margin-top:10px"><option value="WPA">WPA / WPA2</option><option value="WEP">WEP</option><option value="nopass">No password</option></select></div>
+
+        <div class="grp" data-t="contact" style="display:none"><label for="cname">Contact details</label>
+          <input type="text" id="cname" placeholder="Full name">
+          <input type="text" id="cphone" placeholder="Phone" style="margin-top:10px">
+          <input type="text" id="cemail" placeholder="Email" style="margin-top:10px">
+          <input type="text" id="corg" placeholder="Company (optional)" style="margin-top:10px">
+          <input type="text" id="curl" placeholder="Website (optional)" style="margin-top:10px"></div>
+
+        <div><label for="caption">Caption (optional)</label>
+          <input type="text" id="caption" placeholder="Scan for my contact" maxlength="36"></div>
+        <div><label for="icon">Center mark</label>
+          <select id="icon"><option value="none">None</option><option value="custom">Custom (upload / emoji)…</option><option value="scan">Scan glyph</option><option value="link">Link</option><option value="at">@ symbol</option><option value="code">Code &lt;/&gt;</option><option value="person">Person</option><option value="phone">Phone</option><option value="mail">Mail</option></select></div>
+        <div id="customMark" style="display:none">
+          <label for="iconFile">Your icon</label>
+          <input type="file" id="iconFile" accept="image/*" style="font-size:13px">
+          <input type="text" id="iconEmoji" placeholder="…or type an emoji, e.g. ☎" maxlength="2" style="margin-top:10px"></div>
+        <div><label for="style">Module style</label>
+          <select id="style"><option value="rounded">Rounded</option><option value="dots">Dots</option><option value="square">Classic</option></select></div>
+        <div><label>Color</label>
+          <div class="swatches" id="sw"></div></div>
         <button id="download" disabled>Download PNG</button>
-        <p class="hint" style="text-align:left">Test the code with your phone camera before printing or sharing.</p>
+        <p class="hint" style="text-align:left">Tip: scan-test with your phone before printing.</p>
       </div>
       <div class="preview">
         <div class="stage"><canvas id="cv" width="100" height="100"></canvas></div>
@@ -104,117 +103,115 @@
 
 <script>
 var cv=document.getElementById('cv'),ctx=cv.getContext('2d');
-var urlI=document.getElementById('url'),capI=document.getElementById('caption');
-var styleI=document.getElementById('style'),themeI=document.getElementById('theme');
-var fgI=document.getElementById('fg'),bgI=document.getElementById('bg');
-var custom=document.getElementById('customColors');
-var dlBtn=document.getElementById('download'),status=document.getElementById('status');
-
-var THEMES={
-  ink:{fg:'#1a1714',bg:'#f6efe1'},
-  mono:{fg:'#000000',bg:'#ffffff'},
-  ember:{fg:'#7a1f10',bg:'#fff4ee'},
-  forest:{fg:'#15402c',bg:'#f0f6ef'},
-  ocean:{fg:'#0d3a5c',bg:'#eef6fb'}
-};
-
-function colors(){
-  if(themeI.value==='custom') return {fg:fgI.value,bg:bgI.value};
-  return THEMES[themeI.value];
+var urlI=document.getElementById('url'),capI=document.getElementById('caption'),iconI=document.getElementById('icon');
+var swWrap=document.getElementById('sw'),dlBtn=document.getElementById('download'),status=document.getElementById('status');
+var iconFile=document.getElementById('iconFile'),iconEmoji=document.getElementById('iconEmoji'),customMark=document.getElementById('customMark');
+var customImg=null;
+var qrtypeI=document.getElementById('qrtype');
+var styleI=document.getElementById('style');
+function val(id){var e=document.getElementById(id);return e?e.value.trim():'';}
+function esc(s){return s.replace(/([\\;,:"])/g,'\\$1');}
+function buildPayload(){
+  var t=qrtypeI.value;
+  if(t==='link'){var u=val('url');try{new URL(u);}catch(e){return null;}if(u==='https://'||u==='http://')return null;return u;}
+  if(t==='text'){return val('text')||null;}
+  if(t==='phone'){var p=val('phone');return p?'tel:'+p:null;}
+  if(t==='sms'){var n=val('smsnum');if(!n)return null;var msg=val('smsmsg');return 'SMSTO:'+n+(msg?':'+msg:'');}
+  if(t==='email'){var to=val('emailto');if(!to)return null;var q=[];var s=val('emailsub'),b=val('emailbody');
+    if(s)q.push('subject='+encodeURIComponent(s));if(b)q.push('body='+encodeURIComponent(b));
+    return 'mailto:'+to+(q.length?'?'+q.join('&'):'');}
+  if(t==='wifi'){var ssid=val('wifissid');if(!ssid)return null;var enc=val('wifienc'),pw=val('wifipass');
+    if(enc==='nopass')return 'WIFI:T:nopass;S:'+esc(ssid)+';;';
+    return 'WIFI:T:'+enc+';S:'+esc(ssid)+';P:'+esc(pw)+';;';}
+  if(t==='contact'){var nm=val('cname');if(!nm&&!val('cphone')&&!val('cemail'))return null;
+    var v='BEGIN:VCARD\nVERSION:3.0\nN:'+nm+'\nFN:'+nm;
+    if(val('corg'))v+='\nORG:'+val('corg');if(val('cphone'))v+='\nTEL:'+val('cphone');
+    if(val('cemail'))v+='\nEMAIL:'+val('cemail');if(val('curl'))v+='\nURL:'+val('curl');
+    return v+'\nEND:VCARD';}
+  return null;
 }
+var PALETTE=['#1a1a1a','#16243d','#1c3a2a','#5a2230','#3a1f42'];var fg='#1a1a1a';
+PALETTE.forEach(function(c,i){var d=document.createElement('div');d.className='sw'+(i===0?' on':'');d.style.background=c;
+  d.onclick=function(){fg=c;[].forEach.call(swWrap.children,function(e){e.classList.remove('on')});d.classList.add('on');render();};
+  swWrap.appendChild(d);});
+
 function isValid(u){if(!u||u==='https://'||u==='http://')return false;try{new URL(u);return true}catch(e){return false}}
+function rr(c,x,y,w,h,r){r=Math.min(r,w/2,h/2);c.beginPath();c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function inFinder(r,c,n){return(r<7&&c<7)||(r<7&&c>=n-7)||(r>=n-7&&c<7);}
+function drawFinder(c,x,y,m,dark,style){var R=style==='square'?0:1;
+  c.fillStyle=dark;rr(c,x,y,7*m,7*m,7*m*0.26*R);c.fill();
+  c.fillStyle='#fff';rr(c,x+m,y+m,5*m,5*m,5*m*0.26*R);c.fill();
+  c.fillStyle=dark;rr(c,x+2*m,y+2*m,3*m,3*m,3*m*0.32*R);c.fill();}
+function wrap(c,t,w){var a=t.split(/\s+/),L=[],l='';for(var i=0;i<a.length;i++){var s=l?l+' '+a[i]:a[i];
+  if(c.measureText(s).width>w&&l){L.push(l);l=a[i];}else l=s;}if(l)L.push(l);return L;}
 
-function rr(c,x,y,w,h,r){r=Math.min(r,w/2,h/2);c.beginPath();
-  c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);
-  c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
-
-function inFinder(r,c,n){
-  return (r<7&&c<7)||(r<7&&c>=n-7)||(r>=n-7&&c<7);
-}
-
-function drawFinder(c,x,y,m,fg,bg,style){
-  var R=style==='square'?0:1;
-  c.fillStyle=fg; rr(c,x,y,7*m,7*m,7*m*0.22*R); c.fill();
-  c.fillStyle=bg; rr(c,x+m,y+m,5*m,5*m,5*m*0.22*R); c.fill();
-  c.fillStyle=fg; rr(c,x+2*m,y+2*m,3*m,3*m,3*m*0.28*R); c.fill();
-}
-
-function wrap(c,text,maxW){
-  var words=text.split(/\s+/),lines=[],line='';
-  for(var i=0;i<words.length;i++){
-    var t=line?line+' '+words[i]:words[i];
-    if(c.measureText(t).width>maxW&&line){lines.push(line);line=words[i];}
-    else line=t;
-  }
-  if(line)lines.push(line);return lines;
-}
+function lineIcon(ctx,k,cx,cy,s,color){ctx.strokeStyle=color;ctx.lineWidth=s*0.085;ctx.lineJoin='round';ctx.lineCap='round';ctx.fillStyle=color;
+  if(k==='person'){ctx.beginPath();ctx.arc(cx,cy-s*0.24,s*0.2,0,7);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-s*0.36,cy+s*0.4);ctx.quadraticCurveTo(cx-s*0.36,cy+s*0.04,cx,cy+s*0.04);
+    ctx.quadraticCurveTo(cx+s*0.36,cy+s*0.04,cx+s*0.36,cy+s*0.4);ctx.stroke();}
+  else if(k==='phone'){var w=s*0.52,h=s*0.82;rr(ctx,cx-w/2,cy-h/2,w,h,s*0.13);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-s*0.07,cy+h/2-s*0.12);ctx.lineTo(cx+s*0.07,cy+h/2-s*0.12);ctx.stroke();}
+  else if(k==='mail'){var ew=s*0.84,eh=s*0.6;rr(ctx,cx-ew/2,cy-eh/2,ew,eh,s*0.1);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-ew/2+s*0.05,cy-eh/2+s*0.07);ctx.lineTo(cx,cy+s*0.06);ctx.lineTo(cx+ew/2-s*0.05,cy-eh/2+s*0.07);ctx.stroke();}
+  else if(k==='scan'){var c=s*0.46,a=s*0.2;
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(p){var x=cx+p[0]*c,y=cy+p[1]*c;ctx.beginPath();
+      ctx.moveTo(x-p[0]*a,y);ctx.lineTo(x,y);ctx.lineTo(x,y-p[1]*a);ctx.stroke();});}
+  else if(k==='at'){ctx.font='600 '+(s*1.15)+'px Helvetica Neue, Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('@',cx,cy+s*0.02);}
+  else if(k==='code'){ctx.font='700 '+(s*0.92)+'px Menlo, Consolas, monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('</>',cx,cy+s*0.02);}}
 
 function render(){
-  var u=urlI.value.trim();
-  if(!isValid(u)){dlBtn.disabled=true;status.textContent='Enter a valid link to generate';
-    ctx.clearRect(0,0,cv.width,cv.height);cv.width=100;cv.height=100;return;}
-  var col=colors(),fg=col.fg,bg=col.bg,style=styleI.value;
-  var qr;try{qr=QRCode.create(u,{errorCorrectionLevel:'H'});}catch(e){status.textContent='Link too long for one code';return;}
-  var n=qr.modules.size, data=qr.modules.data;
-  var m=14;                       // px per module (high-res)
-  var quiet=4;                    // quiet zone in modules
-  var pad=Math.round(m*4);        // outer canvas padding
-  var qrPx=(n+quiet*2)*m;
-  var cap=capI.value.trim();
-  var capFont=Math.round(m*2.6);
-  var capLines=[];
-  if(cap){ctx.font=capFont+'px Georgia, serif'; }
-  var W=qrPx+pad*2;
-  // measure caption lines against width
-  var measureCtx=cv.getContext('2d');measureCtx.font=capFont+'px Georgia, serif';
-  if(cap)capLines=wrap(measureCtx,cap,qrPx);
-  var capBlock=cap?(capLines.length*capFont*1.25+pad*0.6):0;
-  var H=qrPx+pad*2+capBlock;
+  var u=buildPayload();
+  if(!u){dlBtn.disabled=true;status.textContent='Fill in the details to generate';cv.width=100;cv.height=100;ctx.clearRect(0,0,100,100);return;}
+  var hasMark=iconI.value!=='none';
+  var qr;try{qr=QRCode.create(u,{errorCorrectionLevel:hasMark?'H':'Q'});}catch(e){status.textContent='Too much data for one code';dlBtn.disabled=true;return;}
+  var n=qr.modules.size,data=qr.modules.data,m=18,quiet=4,qrPx=(n+quiet*2)*m;
+  var cap=capI.value.trim(),capFont=Math.round(m*2.5);
+  var mc=cv.getContext('2d');mc.font='400 '+capFont+'px Helvetica Neue, Arial, sans-serif';
+  var capLines=cap?wrap(mc,cap,qrPx*0.92):[];
+  var pad=Math.round(m*1.6);
+  var capBlock=cap?(capLines.length*capFont*1.3+m*1.6):0;
+  var W=qrPx+pad*2,H=pad+qrPx+(cap?m*1.4:pad)+capBlock;
   cv.width=W;cv.height=H;
+  ctx.fillStyle='#ffffff';rr(ctx,0,0,W,H,m*2.2);ctx.fill();
 
-  // card background
-  ctx.fillStyle=bg;rr(ctx,0,0,W,H,m*2.4);ctx.fill();
+  var ox=pad+quiet*m,oy=pad+quiet*m,style=styleI.value;ctx.fillStyle=fg;
+  for(var r=0;r<n;r++)for(var ci=0;ci<n;ci++){
+    if(!data[r*n+ci]||inFinder(r,ci,n))continue;var x=ox+ci*m,y=oy+r*m;
+    if(style==='dots'){ctx.beginPath();ctx.arc(x+m/2,y+m/2,m*0.42,0,7);ctx.fill();}
+    else if(style==='square'){ctx.fillRect(x,y,m,m);}
+    else{rr(ctx,x+m*0.08,y+m*0.08,m*0.84,m*0.84,m*0.34);ctx.fill();}}
+  drawFinder(ctx,ox,oy,m,fg,style);drawFinder(ctx,ox+(n-7)*m,oy,m,fg,style);drawFinder(ctx,ox,oy+(n-7)*m,m,fg,style);
 
-  // QR origin (inside quiet zone)
-  var ox=pad+quiet*m, oy=pad+quiet*m;
-  ctx.fillStyle=fg;
-  for(var r=0;r<n;r++){
-    for(var cidx=0;cidx<n;cidx++){
-      if(!data[r*n+cidx])continue;
-      if(inFinder(r,cidx,n))continue;
-      var x=ox+cidx*m, y=oy+r*m;
-      if(style==='dots'){
-        ctx.beginPath();ctx.arc(x+m/2,y+m/2,m*0.42,0,7);ctx.fill();
-      }else if(style==='rounded'){
-        rr(ctx,x+m*0.06,y+m*0.06,m*0.88,m*0.88,m*0.32);ctx.fill();
-      }else{
-        ctx.fillRect(x,y,m,m);
-      }
-    }
+  if(iconI.value!=='none'){var cx=pad+qrPx/2,cy=pad+qrPx/2,badge=qrPx*0.2;
+    if(iconI.value==='custom'){
+      if(customImg){var R=badge*0.92;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx,cy,R*0.9,0,7);ctx.fill();
+        ctx.save();ctx.beginPath();ctx.arc(cx,cy,R*0.78,0,7);ctx.clip();
+        var iw=customImg.width,ih=customImg.height,sc=Math.max((R*1.56)/iw,(R*1.56)/ih);
+        ctx.drawImage(customImg,cx-iw*sc/2,cy-ih*sc/2,iw*sc,ih*sc);ctx.restore();}
+      else if(iconEmoji.value){ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx,cy,badge*0.82,0,7);ctx.fill();
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=(badge*1.1)+'px Helvetica Neue, Arial, sans-serif';ctx.fillText(iconEmoji.value,cx,cy+badge*0.04);}
+    } else {
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx,cy,badge*0.78,0,7);ctx.fill();
+      lineIcon(ctx,iconI.value,cx,cy,badge*0.92,fg);}
   }
-  // finder patterns
-  drawFinder(ctx,ox,oy,m,fg,bg,style);
-  drawFinder(ctx,ox+(n-7)*m,oy,m,fg,bg,style);
-  drawFinder(ctx,ox,oy+(n-7)*m,m,fg,bg,style);
 
-  // caption
-  if(cap){
-    ctx.fillStyle=fg;ctx.font=capFont+'px Georgia, serif';ctx.textAlign='center';ctx.textBaseline='top';
-    var ty=pad+qrPx+pad*0.45;
-    for(var i=0;i<capLines.length;i++){ctx.fillText(capLines[i],W/2,ty+i*capFont*1.25);}
-  }
+  if(cap){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='400 '+capFont+'px Helvetica Neue, Arial, sans-serif';
+    ctx.fillStyle=fg;var lh=capFont*1.3,cy2=pad+qrPx+m*1.6+capBlock/2,sy=cy2-((capLines.length-1)*lh)/2;
+    for(var i=0;i<capLines.length;i++)ctx.fillText(capLines[i],W/2,sy+i*lh);}
   dlBtn.disabled=false;status.textContent='Ready — scan to test, then download';
 }
-
-function download(){
-  var a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download='qr-code.png';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-}
-
-themeI.addEventListener('change',function(){custom.style.display=themeI.value==='custom'?'flex':'none';render();});
-[urlI,capI,styleI,fgI,bgI].forEach(function(el){el.addEventListener('input',render);});
-dlBtn.addEventListener('click',download);
-render();
+function download(){var a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download='qr-code.png';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);}
+function showGroup(){var t=qrtypeI.value;[].forEach.call(document.querySelectorAll('.grp'),function(g){
+  g.style.display=g.getAttribute('data-t')===t?'block':'none';});render();}
+qrtypeI.addEventListener('change',showGroup);
+[].forEach.call(document.querySelectorAll('.grp input, .grp select'),function(el){el.addEventListener('input',render);});
+[capI,iconEmoji,styleI].forEach(function(el){el.addEventListener('input',render);});
+iconI.addEventListener('change',function(){customMark.style.display=iconI.value==='custom'?'block':'none';render();});
+iconFile.addEventListener('change',function(e){var f=e.target.files&&e.target.files[0];if(!f)return;
+  var rd=new FileReader();rd.onload=function(){var im=new Image();im.onload=function(){customImg=im;render();};im.src=rd.result;};rd.readAsDataURL(f);});
+dlBtn.addEventListener('click',download);showGroup();
 </script>
 </body>
 </html>
